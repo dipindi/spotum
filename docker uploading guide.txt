@@ -1,0 +1,5 @@
+docker build -t your-image-name .
+az login
+az acr login SpotumDockerImage
+docker tag your-image-name spotumdockerimage.azurecr.io/your-image-name:your-tag
+docker push spotumdockerimage.azurecr.io/your-image-name:your-tag
