@@ -119,8 +119,8 @@ def main(page: Page):
     pick_file_button = CupertinoFilledButton(content=Text("Upload Image", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=lambda _: file_picker.pick_files(allow_multiple=False))
     restart_button = CupertinoFilledButton(content=Text("Restart", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=restart_process)
     
-    result_pred = Text(size=20, font_family="RobotoFlex", weight=FontWeight.W_500)
-    result_conf = Text(size=20, font_family="RobotoFlex", weight=FontWeight.W_500)
+    result_pred = Text(size=26, font_family="RobotoFlex", weight=FontWeight.W_700)
+    result_conf = Text(size=20, font_family="RobotoMono", weight=FontWeight.W_300)
     result_image = ft.Image(src="assets/initial.png", width=350, height=350, border_radius=border_radius.all(10))
 
     def route_change(e):
