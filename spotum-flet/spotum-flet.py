@@ -7,7 +7,7 @@ from mindspore.train.serialization import load_checkpoint, load_param_into_net
 from mindspore.nn import Softmax
 from PIL import Image
 import flet as ft
-from flet import AppBar, CupertinoFilledButton, Page, Container, Text, View, FontWeight, colors, TextButton, padding, ThemeMode, border_radius, Image as FletImage, FilePicker, FilePickerResultEvent
+from flet import AppBar, CupertinoFilledButton, Page, Container, Text, View, FontWeight, colors, TextButton, padding, ThemeMode, border_radius, Image as FletImage, FilePicker, FilePickerResultEvent, icons
 
 from resnet50_arch import resnet50
 
@@ -74,11 +74,12 @@ def main(page: Page):
 
             if os.path.exists(image_path):
                 predicted_class, confidence = predict(image_path)
+                conf_converted = confidence * 100
                 
                 result_pred.value = f"Prediction: {predicted_class}"
-                result_conf.value = f"Confidence: {confidence:.2f}"
+                result_conf.value = f"[{conf_converted:.2f} Confident]"
                 result_image.src = image_path
-                
+
                 if predicted_class == "Normal":
                     result_pred.color = "green"
                 else:
@@ -91,11 +92,13 @@ def main(page: Page):
                 else:
                     result_conf.color = "red"
                 
-                pick_file_button.disabled = True
+                result.disabled = True
+                restart_button.visible = True
                 result_pred.update()
                 result_conf.update()
-                result_image.update()
-                pick_file_button.update()
+                restart_button.update()
+                result.update()
+
             else:
                 result_pred.value = f"Error: File '{image_path}' does not exist."
                 result_pred.update()
@@ -104,24 +107,27 @@ def main(page: Page):
     def restart_process(e):
         result_pred.value = ""
         result_conf.value = ""
-        result_image.src = "assets/initial.png"
-        pick_file_button.disabled = False
+        result_image.src = "assets/result_initial.png"
+        result.disabled = False
+        restart_button.visible = False
         result_pred.update()
         result_conf.update()
-        result_image.update()
-        pick_file_button.update()
+        restart_button.update()
+        result.update()
+        print("RESTARTED")
 
     file_picker = FilePicker(on_result=process_image)
     selected_files = Text()
     
     page.overlay.append(file_picker)
 
-    pick_file_button = CupertinoFilledButton(content=Text("Upload Image", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=lambda _: file_picker.pick_files(allow_multiple=False))
-    restart_button = CupertinoFilledButton(content=Text("Restart", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=restart_process)
+    restart_button = TextButton(content=Text("Start over", font_family="RobotoMono", size=14, weight=FontWeight.W_300, color=colors.BLACK), visible=False, on_click=restart_process)
     
-    result_pred = Text(size=20, font_family="RobotoFlex", weight=FontWeight.W_500)
-    result_conf = Text(size=20, font_family="RobotoFlex", weight=FontWeight.W_500)
-    result_image = ft.Image(src="assets/initial.png", width=350, height=350, border_radius=border_radius.all(10))
+    result_pred = Text(size=40, font_family="RobotoFlex", weight=FontWeight.W_700)
+    result_conf = Text(size=24, font_family="RobotoMono", weight=FontWeight.W_500)
+    result_image = ft.Image(src="assets/result_initial.png", width=350, height=350, border_radius=border_radius.all(10))
+
+    result = TextButton(content=result_image, on_click=lambda _: file_picker.pick_files(allow_multiple=False))
 
     def route_change(e):
         page.views.clear()
@@ -133,18 +139,20 @@ def main(page: Page):
                            actions=[
                                TextButton(content=Container(Text("GitHub", font_family="RobotoFlex", size=18, weight=FontWeight.W_400, color=colors.BLACK), padding=padding.only(right=25, left=25)), url="https://github.com/dipindi/spotum"),
                                TextButton(content=Container(Text("About Us", font_family="RobotoFlex", size=18, weight=FontWeight.W_400, color=colors.BLACK), padding=padding.only(right=25, left=25)), on_click=lambda _: page.go("/aboutus"))
-                           ]),
+                           ]
+                    ),
                     Container(
-                        Text("REVOLUTIONIZE TUBERCULOSIS\nDETECTION WITH AI", font_family="RobotoFlex", size=40, weight=FontWeight.W_800, color=colors.BLACK),
+                        content=ft.Column(
+                            [
+                                Text("REVOLUTIONIZE TUBERCULOSIS\nDETECTION WITH AI", font_family="RobotoFlex", size=40, weight=FontWeight.W_800, color=colors.BLACK),
+                                Text("Your AI-powered ally in detecting\ntuberculosis from X-ray images\nwith an impressive 98% accuracy", font_family="RobotoMono", size=20, weight=FontWeight.W_300, color=colors.BLACK),
+                            ]
+                        ),
                         padding=padding.only(left=100, top=70)
                     ),
                     Container(
-                        Text("Your AI-powered ally in detecting\ntuberculosis from X-ray images\nwith an impressive 98% accuracy", font_family="RobotoMono", size=20, weight=FontWeight.W_300, color=colors.BLACK),
-                        padding=padding.only(left=100, bottom=70)
-                    ),
-                    Container(
                         CupertinoFilledButton(content=Text("Get Started", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=lambda _: page.go("/spotumapp")),
-                        padding=padding.only(left=100)
+                        padding=padding.only(left=100, top=70)
                     )
                 ],
             )
@@ -156,20 +164,24 @@ def main(page: Page):
                     [
                         AppBar(color=colors.BLACK, bgcolor="#f8f9ff"),
                         Container(
-                            content=ft.Column(
+                            content=ft.Row(
                                 [
-                                    pick_file_button,
-                                    result_pred,
-                                    result_conf,
-                                    result_image,
-                                    restart_button
+                                    result,
+                                    Container(
+                                        content=ft.Column(
+                                            [
+                                                result_pred,
+                                                result_conf,
+                                                restart_button,
+                                            ]
+                                        )
+                                    )
                                 ],
                                 alignment=ft.MainAxisAlignment.CENTER,
-                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                 spacing=10
                             ),
-                            alignment=ft.alignment.center,
-                        )
+                            padding=padding.only(top=100)
+                        ),
                     ],
                 )
             )
@@ -184,28 +196,47 @@ def main(page: Page):
                             padding=padding.only(left=100)
                         ),
                         Container(
-                            Text("Rance De Guzman", font_family="RobotoFlex", size=20, weight=FontWeight.W_600, color=colors.BLACK),
-                            padding=padding.only(left=400, top=60)
-                        ),
-                        Container(
-                            Text("rjldeguzman@mymail.mapua.edu.ph", font_family="RobotoMono", size=16, weight=FontWeight.W_300, color=colors.BLACK),
-                            padding=padding.only(left=400)
-                        ),
-                        Container(
-                            Text("Reji Capoquian", font_family="RobotoFlex", size=20, weight=FontWeight.W_600, color=colors.BLACK),
-                            padding=padding.only(left=400, top=60)
-                        ),
-                        Container(
-                            Text("rtcapoquian@mymail.mapua.edu.ph", font_family="RobotoMono", size=16, weight=FontWeight.W_300, color=colors.BLACK),
-                            padding=padding.only(left=400)
-                        ),
-                        Container(
-                            Text("Mico Malatag", font_family="RobotoFlex", size=20, weight=FontWeight.W_600, color=colors.BLACK),
-                            padding=padding.only(left=400, top=60)
-                        ),
-                        Container(
-                            Text("mkpmalatag@mymail.mapua.edu.ph", font_family="RobotoMono", size=16, weight=FontWeight.W_300, color=colors.BLACK),
-                            padding=padding.only(left=400)
+                            content=ft.Column(
+                                [
+                                    ft.Row(
+                                        [
+                                            ft.Image(src="assets/rance.png"),
+                                            Container(content=ft.Column(
+                                                [
+                                                    Text("Rance De Guzman", font_family="RobotoFlex", size=20, weight=FontWeight.W_600, color=colors.BLACK),
+                                                    Text("rjldeguzman@mymail.mapua.edu.ph", font_family="RobotoMono", size=16, weight=FontWeight.W_300, color=colors.BLACK),
+                                                ]
+                                            )
+                                            ),
+                                        ]
+                                    ),
+                                    ft.Row(
+                                        [
+                                            ft.Image(src="assets/reji.png"),
+                                            Container(content=ft.Column(
+                                                [
+                                                    Text("Reji Capoquian", font_family="RobotoFlex", size=20, weight=FontWeight.W_600, color=colors.BLACK),
+                                                    Text("rtcapoquian@mymail.mapua.edu.ph", font_family="RobotoMono", size=16, weight=FontWeight.W_300, color=colors.BLACK),
+                                                ]
+                                            )
+                                            ),
+                                        ]
+                                    ),
+                                    ft.Row(
+                                        [
+                                            ft.Image(src="assets/mico.png"),
+                                            Container(content=ft.Column(
+                                                [
+                                                    Text("Mico Malatag", font_family="RobotoFlex", size=20, weight=FontWeight.W_600, color=colors.BLACK),
+                                                    Text("mkpmalatag@mymail.mapua.edu.ph", font_family="RobotoMono", size=16, weight=FontWeight.W_300, color=colors.BLACK),
+                                                ]
+                                            )
+                                            ),
+                                        ]
+                                    )
+                                ]
+                            ),
+                            padding=padding.only(left=200),
                         ),
                     ],
                 )
