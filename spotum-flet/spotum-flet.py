@@ -21,7 +21,7 @@ cfg = {
     '_G_STD': 1,
     '_B_STD': 1,
     'num_class': 2,
-    'model_path': '../best_model.ckpt'
+    'model_path': '../../best_model.ckpt'
 }
 
 class_names = {0: 'Normal', 1: 'Tuberculosis'}
@@ -104,7 +104,7 @@ def main(page: Page):
     def restart_process(e):
         result_pred.value = ""
         result_conf.value = ""
-        result_image.src = "assets/logo.png"
+        result_image.src = "assets/initial.png"
         pick_file_button.disabled = False
         result_pred.update()
         result_conf.update()
@@ -119,9 +119,9 @@ def main(page: Page):
     pick_file_button = CupertinoFilledButton(content=Text("Upload Image", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=lambda _: file_picker.pick_files(allow_multiple=False))
     restart_button = CupertinoFilledButton(content=Text("Restart", font_family="RobotoFlex", size=18, weight=FontWeight.W_500, color=colors.WHITE), border_radius=border_radius.all(8), on_click=restart_process)
     
-    result_pred = Text(size=20)
-    result_conf = Text(size=20)
-    result_image = FletImage(src="assets/logo.png", width=350, height=350, border_radius=border_radius.all(10))
+    result_pred = Text(size=20, font_family="RobotoFlex", weight=FontWeight.W_500)
+    result_conf = Text(size=20, font_family="RobotoFlex", weight=FontWeight.W_500)
+    result_image = ft.Image(src="assets/initial.png", width=350, height=350, border_radius=border_radius.all(10))
 
     def route_change(e):
         page.views.clear()
