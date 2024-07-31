@@ -114,7 +114,7 @@ def main(page: Page):
         result_conf.update()
         restart_button.update()
         result.update()
-        print("RESTARTED")
+        # print("RESTARTED")
 
     file_picker = FilePicker(on_result=process_image)
     selected_files = Text()
